@@ -22,7 +22,6 @@ def calc_initial_t (t):
 		return -(2*H/(L-l))*(t-L)
 
 def calc_initial_x (x):
-    # return 1/((np.cosh(x-2))**2) - 1/(np.cosh(-2))**2
 	if x < l or x >= L:
 		return 0
 	if x >= l and x < L:
@@ -34,22 +33,11 @@ def left_angel(ud, udl, xs, ts):
 def sceme_L(ud, udl, udr, xs, ts):
     return (udl**2-udr**2)*ts/(4*xs) + 0.5*(udr + udl)
 
-def sceme_CIR(ud, udl, xs, ts):
-    return sp.solveset((x - ud)/ts - (ud*ud - udl * udl)/xs, x)
-
-# def sceme_LF(ud, udl, xs, ts):
-#     return sp.solveset((x - ud)/ts - (ud*ud - udl * udl)/xs, x)
-
-# def sceme_WCL(ud, udl, xs, ts):
-#     return sp.solveset((x - ud)/ts - (ud*ud - udl * udl)/xs, x)
-
 ts = 0.01
 xs = 0.1
 
 Nx = int(X/xs)+1
 Nt = int(T/ts)+1
-
-# print(Nx, Nt)
 
 # Инициализация начальных данных сетки
 u = np.full((Nt,Nx), 0, dtype="float64")
