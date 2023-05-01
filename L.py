@@ -33,7 +33,7 @@ def left_angel(ud, udl, xs, ts):
 def sceme_L(ud, udl, udr, xs, ts):
     return (udl**2-udr**2)*ts/(4*xs) + 0.5*(udr + udl)
 
-ts = 0.01
+ts = 0.1
 xs = 0.1
 
 Nx = int(X/xs)+1
