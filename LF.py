@@ -46,13 +46,15 @@ def calc_initial_x (x):
 def left_angel(ud, udl, xs, ts):
     return ud - ts*ud*(ud-udl)/xs
 
-def scheme_L(ud, udl, udr, xs, ts):
-    return 0.5*(udr + udl) - (udr**2/2-udl**2/2)*ts/(2*xs)
+def scheme_LF(ud, udl, udr, xs, ts):
+    uar = 0.5*(udr+ud) - (udr**2/2-ud**2/2)*ts/(2*xs) 
+    ual = 0.5*(ud+udl) - (ud**2/2-udl**2/2)*ts/(2*xs)
+    return ud - (uar**2/2-ual**2/2)*ts/(xs)
 
-ts = 0.001
+ts = 0.005
 xs = ts * 10
 
-print("L prec: ", xs)
+print("LF prec: ", xs)
 
 Nx = int(X/xs)+1
 Nt = int(T/ts)+1
@@ -61,26 +63,26 @@ u = np.full((Nt,Nx), 0, dtype="float64")
 u[0,:] = np.linspace(0,X,Nx)
 u[:,0] = np.linspace(0,T,Nt)
 for i in range (0, Nx):
-	u[0,i] = calc_initial_x(u[0,i])
+    u[0,i] = calc_initial_x(u[0,i])
 for i in range (0, Nt):
     u[i,0] = calc_initial_t(u[i,0])
 # print(u)
 
-L = u.copy()
+LF = u.copy()
 
 for i in range (1, Nt):
-	for j in range (1,Nx):
-		if (j != Nx-1):
-			L[i,j] = scheme_L(L[i-1,j],L[i-1,j-1],L[i-1,j+1],xs,ts)
-		else:
-			L[i,j] = left_angel(L[i-1,j],L[i-1,j-1],xs,ts)
-# print(L)
+    for j in range (1,Nx):
+        if (j != Nx-1):
+            LF[i,j] = scheme_LF(LF[i-1,j],LF[i-1,j-1],LF[i-1,j+1],xs,ts)
+        else:
+            LF[i,j] = left_angel(LF[i-1,j],LF[i-1,j-1],xs,ts)
+# print(LF)
 
 calc_time = datetime.now() - start_time
 print("calc: ", calc_time)
 
-df = pd.DataFrame(data=L)
-df.to_csv(f"./Course_labwork_CompMath/tables/L-{xs}.csv")
+df = pd.DataFrame(data=LF)
+df.to_csv(f"./Course_labwork_CompMath/tables/LF-{xs}.csv")
 
 save_time = datetime.now() - start_time - calc_time
 print("save: ", save_time)
@@ -88,12 +90,12 @@ print("save: ", save_time)
 x = np.linspace(0, X, Nx)
 t = np.linspace(0, T, Nt)
 
-raw = create_image(L,Nt,Nx)
+raw = create_image(LF,Nt,Nx)
 im = Image.fromarray(raw.astype(np.uint8))
 size = (1000,1000)
 im = im.resize(size)
 im = im.transpose(Image.FLIP_TOP_BOTTOM)
-im.save(f"./Course_labwork_CompMath/images/L-{xs}.png")
+im.save(f"./Course_labwork_CompMath/images/LF-{xs}.png")
 
 total_time = datetime.now() - start_time - save_time - calc_time
 print("show: ", total_time)
