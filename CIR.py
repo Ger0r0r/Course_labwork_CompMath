@@ -25,6 +25,7 @@ l = 0.3
 L = 0.7
 X = 1
 T = 1
+Kurant = 0.1
 
 def calc_sigma (ts, xs, u):
 	return ts/xs*np.max(u)
@@ -43,60 +44,67 @@ def calc_initial_x (x):
 	if x >= l and x < L:
 		return H
 
-def left_angel(ud, udl, xs, ts):
-    return ud - ts*ud*(ud-udl)/xs
+def left_angel(ud, udl, Kurant):
+	uds = ud**2
+	udls = udl**2
+	return Kurant * (uds - udls)/(2) + ud
 
-def scheme_CIR(ud, udl, udr, xs, ts):
+def scheme_CIR(ud, udl, udr, Kurant):
     if ud < 0:
-        return ud - (udr**2/2 - ud**2/2)*ts/(xs)
+        return ud - (udr**2 - ud**2)*Kurant/(2)
     else:
-        return ud - (ud**2/2 - udl**2/2)*ts/(xs)
+        return ud - (ud**2 - udl**2)*Kurant/(2 )
 
-ts = 0.005
-xs = ts * 10
 
-print("CIR prec: ", xs)
 
-Nx = int(X/xs)+1
-Nt = int(T/ts)+1
+def do_CIR(ts, Kurant):
 
-u = np.full((Nt,Nx), 0, dtype="float64")
-u[0,:] = np.linspace(0,X,Nx)
-u[:,0] = np.linspace(0,T,Nt)
-for i in range (0, Nx):
-    u[0,i] = calc_initial_x(u[0,i])
-for i in range (0, Nt):
-    u[i,0] = calc_initial_t(u[i,0])
-# print(u)
+    xs = ts * int(1 / Kurant)
+    print("CIR prec: ", xs)
 
-CIR = u.copy()
+    Nx = int(X/xs)+1
+    Nt = int(T/ts)+1
 
-for i in range (1, Nt):
-    for j in range (1,Nx):
-        if (j != Nx-1):
-            CIR[i,j] = scheme_CIR(CIR[i-1,j],CIR[i-1,j-1],CIR[i-1,j+1],xs,ts)
-        else:
-            CIR[i,j] = left_angel(CIR[i-1,j],CIR[i-1,j-1],xs,ts)
-# print(CIR)
+    u = np.full((Nt,Nx), 0, dtype="float128")
+    u[0,:] = np.linspace(0,X,Nx)
+    u[:,0] = np.linspace(0,T,Nt)
+    for i in range (0, Nx):
+        u[0,i] = calc_initial_x(u[0,i])
+    for i in range (0, Nt):
+        u[i,0] = calc_initial_t(u[i,0])
 
-calc_time = datetime.now() - start_time
-print("calc: ", calc_time)
+    CIR = u.copy()
 
-df = pd.DataFrame(data=CIR)
-df.to_csv(f"./Course_labwork_CompMath/tables/CIR-{xs}.csv")
+    for i in range (1, Nt):
+        for j in range (1,Nx):
+            if (j != Nx-1):
+                CIR[i,j] = scheme_CIR(CIR[i-1,j],CIR[i-1,j-1],CIR[i-1,j+1],Kurant)
+            else:
+                CIR[i,j] = scheme_CIR(CIR[i-1,j],CIR[i-1,j-1], CIR[i-1, j],Kurant)
+    # print(CIR)
 
-save_time = datetime.now() - start_time - calc_time
-print("save: ", save_time)
+    calc_time = datetime.now() - start_time
+    print("calc: ", calc_time)
 
-x = np.linspace(0, X, Nx)
-t = np.linspace(0, T, Nt)
+    df = pd.DataFrame(data=CIR)
+    df.to_csv(f"./tables/CIR-{xs}.csv")
 
-raw = create_image(CIR,Nt,Nx)
-im = Image.fromarray(raw.astype(np.uint8))
-size = (1000,1000)
-im = im.resize(size)
-im = im.transpose(Image.FLIP_TOP_BOTTOM)
-im.save(f"./Course_labwork_CompMath/images/CIR-{xs}.png")
+    save_time = datetime.now() - start_time - calc_time
+    print("save: ", save_time)
 
-total_time = datetime.now() - start_time - save_time - calc_time
-print("show: ", total_time)
+    x = np.linspace(0, X, Nx)
+    t = np.linspace(0, T, Nt)
+
+    raw = create_image(CIR,Nt,Nx)
+    im = Image.fromarray(raw.astype(np.uint8))
+    size = (1000,1000)
+    im = im.resize(size)
+    im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+    im.save(f"./images/CIR-{xs}.png")
+
+    total_time = datetime.now() - start_time - save_time - calc_time
+    print("show: ", total_time)
+
+t = 0.0005
+Kurant = 0.1
+do_CIR(t, Kurant)

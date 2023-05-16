@@ -25,6 +25,7 @@ l = 0.3
 L = 0.7
 X = 1
 T = 1
+Kurant = 0.1
 
 def calc_sigma (ts, xs, u):
 	return ts/xs*np.max(u)
@@ -44,15 +45,15 @@ def calc_initial_x (x):
 		return H
 
 def left_angel(ud, udl, xs, ts):
-    return ud - ts*ud*(ud-udl)/xs
+	return ts * (ud**2 - udl**2)/(2*xs) + ud
 
 def scheme_LF(ud, udl, udr, xs, ts):
-    uar = 0.5*(udr+ud) - (udr**2/2-ud**2/2)*ts/(2*xs) 
-    ual = 0.5*(ud+udl) - (ud**2/2-udl**2/2)*ts/(2*xs)
-    return ud - (uar**2/2-ual**2/2)*ts/(xs)
+    uar = 0.5*(udr+udl) - (udr**2-ud**2)*ts/(4 * xs) 
+    ual = 0.5*(udr+udl) - (ud**2-udl**2)*ts/(4 * xs)
+    return ud - (uar**2-ual**2)*ts/(xs * 2)
 
-ts = 0.005
-xs = ts * 10
+ts = 0.01
+xs = ts * int (1/Kurant)
 
 print("LF prec: ", xs)
 
@@ -82,7 +83,7 @@ calc_time = datetime.now() - start_time
 print("calc: ", calc_time)
 
 df = pd.DataFrame(data=LF)
-df.to_csv(f"./Course_labwork_CompMath/tables/LF-{xs}.csv")
+df.to_csv(f"./tables/LF-{xs}.csv")
 
 save_time = datetime.now() - start_time - calc_time
 print("save: ", save_time)
@@ -94,8 +95,8 @@ raw = create_image(LF,Nt,Nx)
 im = Image.fromarray(raw.astype(np.uint8))
 size = (1000,1000)
 im = im.resize(size)
-im = im.transpose(Image.FLIP_TOP_BOTTOM)
-im.save(f"./Course_labwork_CompMath/images/LF-{xs}.png")
+im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+im.save(f"./images/LF-{xs}.png")
 
 total_time = datetime.now() - start_time - save_time - calc_time
 print("show: ", total_time)
