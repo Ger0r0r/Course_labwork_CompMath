@@ -24,7 +24,7 @@ H = 1
 l = 0.3
 L = 0.7
 X = 3
-T = 1
+T = 3
 Kurant = 0.1
 
 
@@ -63,6 +63,11 @@ def create_GIF(ts, Kurant):
 
 	Nx = int(X/xs)+1
 	Nframes = int(T/ts)+1
+ 
+	if (Nframes > 100):
+		stepes = int(Nframes / 100)
+	else:
+		stepes = 1
 
 	# CALCULATION
 	u = np.full((Nframes,Nx), 0, dtype="float64")
@@ -85,29 +90,31 @@ def create_GIF(ts, Kurant):
 	# MAKE FRAMES
 	x = np.linspace(0, X, Nx)
 
-	for frame in range(0, Nframes):
+	for frame in range(0, Nframes, stepes):
 		fig = plt.figure(figsize = [12,7])
 		fig = plt.plot(x, L[frame, :], '-b', ms = 0.1)
 		fig = plt.xlabel('x')
 		fig = plt.xlim([0, X])
+		fig = plt.ylim([0, 1.2])
 		fig = plt.ylabel('u(x)')
 		fig = plt.title(f"t = {round(frame * ts, 4)}")
 		fig = plt.savefig(dir_name + f"{frame}.png")
+		plt.close(fig)
 
 	# GIF CREATION
 	im = []
-	for frame in range(0, Nframes):
+	for frame in range(0, Nframes, stepes):
 		img = Image.open(dir_name + f"{frame}.png")
 		img.load()
 		im.append(img) 
 
-	im[0].save(f"./GIF/L_{xs}.gif", save_all = "True", append_images = im[1:], duration = 100)
+	im[0].save(f"./GIF/L_{xs}.gif", save_all = "True", append_images = im[1:], duration = 10)
 
 	shutil.rmtree(dir_name)
 
 
 
-def do_Laks(ts, Kurant):
+def do_L(ts, Kurant):
 
 	start_time = datetime.now()
 
@@ -159,7 +166,7 @@ def do_Laks(ts, Kurant):
 	total_time = datetime.now() - start_time - save_time - calc_time
 	print("show: ", total_time)
 
-create_GIF(0.001, 0.1)
+create_GIF(0.05, 0.1)
 
 # t = [0.01, 0.001, 0.0001]
 # Kurant = 0.2
